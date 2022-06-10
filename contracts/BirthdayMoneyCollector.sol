@@ -14,7 +14,7 @@ contract BirthdayGiftCollector is Ownable{
     constructor(string memory _birthdayChildName, uint256 _giftAmount) {
         birthdayChildName = _birthdayChildName;
         giftAmount = _giftAmount;
-        isContractAvailable = false;
+        isContractAvailable = true;
     }
 
     modifier isContractActive() {
@@ -43,12 +43,6 @@ contract BirthdayGiftCollector is Ownable{
         return moneySenderAddresses;
     }
 
-    function finishContract(address payable birthdayChildAddress) public onlyOwner returns (bool) {
-        emit CollectedMoneyTransfer(birthdayChildAddress, address(this).balance);
-        birthdayChildAddress.transfer(address(this).balance);
-        return true;
-    }
-
     function giftMoneyDeposit() public payable {
         require(msg.value == giftAmount, "Insufficient money");
         require(participants[msg.sender] == 0, "You send money before");
@@ -56,6 +50,12 @@ contract BirthdayGiftCollector is Ownable{
         participants[msg.sender] = msg.value;
         moneySenderAddresses.push(msg.sender);
         emit GiftMoneyDeposit(msg.sender, msg.value);
+    }
+
+    function finishContract(address payable birthdayChildAddress) public onlyOwner returns (bool) {
+        emit CollectedMoneyTransfer(birthdayChildAddress, address(this).balance);
+        birthdayChildAddress.transfer(address(this).balance);
+        return true;
     }
 
     event GiftMoneyDeposit(address who, uint256 amount);
