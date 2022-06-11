@@ -1,23 +1,20 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
-const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const { network, web3 } = require("hardhat");
+const { BN, balance, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const Birthday = artifacts.require("BirthdayMoneyCollector");
 
-contract('BirthdayMoneyCollector', function ([owner, addr1, addr2, addr3]) {
-
+contract('BirthdayMoneyCollector', function ([owner, addr1, addr2, addr3, addr4]) {
   const name = 'fatih';
-  const participationAmount = new BN(100000);
-
+  const defaultAccountBalance = new BN("10000000000000000000000");//1000 ether in wei
+  const participationAmount = new BN("1000000000000000000");//1 ether in wei
 
   describe("Deployment", function () {
     it("it should revert because of invalid birhdate", async function () {
       await expectRevert(Birthday.new(name, 0, participationAmount), 'The birthdayDate is invalid');
-
     });
 
-
     it("it should set fields ", async function () {
-      let birhdate = new BN(getDate(1));
+      let birhdate = new BN(createDate(1));
 
       //when
       this.birthday = await Birthday.new(name, birhdate, participationAmount, { from: owner });
@@ -29,16 +26,13 @@ contract('BirthdayMoneyCollector', function ([owner, addr1, addr2, addr3]) {
       expect(await this.birthday.getBirthdayDate()).to.be.bignumber.equal(birhdate);
 
     });
-
   });
 
   describe("Participation", function () {
-
     beforeEach(async function () {
-      let birhdate = new BN(getDate(1));
+      let birhdate = new BN(createDate(1));
       this.birthday = await Birthday.new(name, birhdate, participationAmount, { from: owner });
     });
-
 
     it("it should emit UserParticipated event ", async function () {
       //when
@@ -67,6 +61,7 @@ contract('BirthdayMoneyCollector', function ([owner, addr1, addr2, addr3]) {
     });
 
     it("it should increase contract balance ", async function () {
+      //given
       await this.birthday.participateBirthday({ from: addr1, value: participationAmount });
       await this.birthday.participateBirthday({ from: addr2, value: participationAmount });
 
@@ -76,10 +71,59 @@ contract('BirthdayMoneyCollector', function ([owner, addr1, addr2, addr3]) {
 
   });
 
+  describe("Close", function () {
 
-  function getDate(day) {
+    beforeEach(async function () {
+      let birhdate = new BN(createDate(1));
+      this.birthday = await Birthday.new(name, birhdate, participationAmount, { from: owner });
+    });
+
+    it("it should revert as Ownable: caller is not the owner", async function () {
+      //when
+      const result = this.birthday.close(addr3, { from: addr3 });
+
+      //then
+      await expectRevert(result, 'Ownable: caller is not the owner');
+    });
+
+    it("it should revert as The birthday hasn't come yet", async function () {
+      //when
+      const result = this.birthday.close(addr4, { from: owner });
+
+      //then
+      await expectRevert(result, "The birthday hasn't come yet");
+    });
+
+    it("it should emit CollectedBirthdayMoneyTransfered", async function () {
+      //given
+      await this.birthday.participateBirthday({ from: addr1, value: participationAmount });
+      await this.birthday.participateBirthday({ from: addr2, value: participationAmount });
+      await this.birthday.participateBirthday({ from: addr3, value: participationAmount });
+
+      await increaseBlockTime(5);
+      const contractBalance = await this.birthday.getContractBalance()
+
+      //when
+      const receipt = await this.birthday.close(addr4, { from: owner });
+
+      //then
+      expectEvent(receipt, 'CollectedBirthdayMoneyTransfered', { to: addr4, tatolCollectedAmount: contractBalance });
+      expect(await this.birthday.getContractBalance()).to.be.bignumber.equal(new BN(0));
+
+      const balance = new BN(await web3.eth.getBalance(addr4))
+      expect(balance).to.be.bignumber.equal(defaultAccountBalance.add(contractBalance));
+    });
+
+  });
+
+  function createDate(dayCount) {
     const date = new Date();
-    date.setDate(date.getDate() + day);
+    date.setDate(date.getDate() + dayCount);
     return date.getTime();
+  }
+
+  async function increaseBlockTime(dayCount) {
+    await network.provider.send("evm_setNextBlockTimestamp", [createDate(dayCount)]);
+    await network.provider.send("evm_mine");
   }
 });

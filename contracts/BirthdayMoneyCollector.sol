@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 
 contract BirthdayMoneyCollector is Ownable {
     string _name;
@@ -78,16 +79,21 @@ contract BirthdayMoneyCollector is Ownable {
         emit UserParticipated(msg.sender, msg.value);
     }
 
-    function close(address payable to) public onlyOwner returns (bool) {
+    function close(address payable to) public onlyOwner {
+        /* console.log(
+            "Current block.timestamp %d and birthdayDate",
+            block.timestamp,_birthdayDate
+        );
+        */
+
         require(
-            _birthdayDate > block.timestamp,
+            _birthdayDate < block.timestamp,
             "The birthday hasn't come yet"
         );
 
         uint256 collectedAmount = getContractBalance();
         to.transfer(collectedAmount);
         emit CollectedBirthdayMoneyTransfered(to, collectedAmount);
-        return true;
     }
 
     event BirthdayMoneyCollectorCreated(
