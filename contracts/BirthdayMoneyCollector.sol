@@ -3,61 +3,102 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract BirthdayGiftCollector is Ownable{
-    string private birthdayChildName;
-    bool private isContractAvailable;
-    uint256 giftAmount;
-    address[] moneySenderAddresses;
-    mapping(address => uint256) private participants;
+contract BirthdayMoneyCollector is Ownable {
+    string _name;
+    uint256 _birthdayDate;
 
+    bool _isActive;
 
-    constructor(string memory _birthdayChildName, uint256 _giftAmount) {
-        birthdayChildName = _birthdayChildName;
-        giftAmount = _giftAmount;
-        isContractAvailable = true;
+    uint256 _participationAmount;
+    address[] _participantList;
+    mapping(address => uint256) _participants;
+
+    constructor(
+        string memory name,
+        uint256 birthdayDate,
+        uint256 participationAmout
+    ) {
+        require(birthdayDate > block.timestamp, "The birthdayDate is invalid");
+
+        _name = name;
+        _birthdayDate = birthdayDate;
+        _participationAmount = participationAmout;
+        _isActive = true;
+
+        emit BirthdayMoneyCollectorCreated(
+            owner(),
+            _name,
+            _birthdayDate,
+            _participationAmount
+        );
     }
 
     modifier isContractActive() {
-        require(isContractAvailable, "Contract is not active");
+        require(_isActive, "Contract is not active");
         _;
     }
 
-     function setContractFlag() public onlyOwner returns (bool) {
-        isContractAvailable = !isContractAvailable;
-        return isContractAvailable;
+    function changeContractStatus() public onlyOwner returns (bool) {
+        _isActive = !_isActive;
+        return _isActive;
     }
 
-    function getBirthdayChildName() public view isContractActive returns (string memory) {
-        return birthdayChildName;
+    function getName() public view returns (string memory) {
+        return _name;
     }
 
-    function getGiftAmount() public view isContractActive returns (uint256) {
-        return giftAmount;
+    function getParticipationAmount() public view returns (uint256) {
+        return _participationAmount;
     }
 
-    function getContractBalance() public view isContractActive returns (uint256) {
+    function getContractBalance() public view returns (uint256) {
         return address(this).balance;
     }
 
-    function getParticipantList() public view isContractActive returns (address[] memory) {
-        return moneySenderAddresses;
+    function getParticipantList() public view returns (address[] memory) {
+        return _participantList;
     }
 
-    function giftMoneyDeposit() public payable {
-        require(msg.value == giftAmount, "Insufficient money");
-        require(participants[msg.sender] == 0, "You send money before");
-        
-        participants[msg.sender] = msg.value;
-        moneySenderAddresses.push(msg.sender);
-        emit GiftMoneyDeposit(msg.sender, msg.value);
+    function getBirthdayDate() public view returns (uint256) {
+        return _birthdayDate;
     }
 
-    function finishContract(address payable birthdayChildAddress) public onlyOwner returns (bool) {
-        emit CollectedMoneyTransfer(birthdayChildAddress, address(this).balance);
-        birthdayChildAddress.transfer(address(this).balance);
+    function participateBirthday() public payable isContractActive {
+        require(
+            _participationAmount == msg.value,
+            "Insufficient participation amount"
+        );
+        require(
+            _participants[msg.sender] == 0,
+            "You have already been participated"
+        );
+
+        _participants[msg.sender] = msg.value;
+        _participantList.push(msg.sender);
+        emit UserParticipated(msg.sender, msg.value);
+    }
+
+    function close(address payable to) public onlyOwner returns (bool) {
+        require(
+            _birthdayDate > block.timestamp,
+            "The birthday hasn't come yet"
+        );
+
+        uint256 collectedAmount = getContractBalance();
+        to.transfer(collectedAmount);
+        emit CollectedBirthdayMoneyTransfered(to, collectedAmount);
         return true;
     }
 
-    event GiftMoneyDeposit(address who, uint256 amount);
-    event CollectedMoneyTransfer(address who, uint256 amount);
+    event BirthdayMoneyCollectorCreated(
+        address owner,
+        string name,
+        uint256 birthdayDate,
+        uint256 participationAmount
+    );
+    event UserParticipated(address user, uint256 participationAmount);
+    event CollectedBirthdayMoneyTransfered(
+        address to,
+        uint256 tatolCollectedAmount
+    );
 }

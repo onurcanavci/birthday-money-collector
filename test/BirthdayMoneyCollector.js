@@ -1,102 +1,78 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
+const Birthday = artifacts.require("BirthdayMoneyCollector");
 
-describe("Birthday Money Collector contract", function () {
-  let contractFactory;
-  let birthdayContract;
-  let owner;
-  let addr1;
-  let addr2;
-  let addrs;
 
-  let mockBitrhdayChildName;
-  let mockGiftAmount;
+contract('BirthdayMoneyCollector', function ([owner, addr1, addr2, addr3]) {
 
-  beforeEach(async function () {
-    mockBitrhdayChildName = "Onur";
-    mockGiftAmount = ethers.utils.parseEther("100000");
-    // Get the ContractFactory and Signers here.
-    contractFactory = await ethers.getContractFactory("BirthdayGiftCollector");
-    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+  const name = 'fatih';
+  const participationAmount = new BN(100000);
 
-    // To deploy our contract, we just have to call Contract.deploy() and await
-    // for it to be deployed(), which happens once its transaction has been
-    // mined.
-    birthdayContract = await contractFactory.deploy(
-      mockBitrhdayChildName,
-      mockGiftAmount
-    );
-  });
 
   describe("Deployment", function () {
-    it("Should return the right birthday child name", async function () {
-      expect(await birthdayContract.getBirthdayChildName()).to.equal(
-        mockBitrhdayChildName
-      );
+    it("it should revert because of invalid birhdate", async function () {
+      await expectRevert(Birthday.new(name, 0, participationAmount), 'The birthdayDate is invalid');
+
     });
 
-    it("Should return the right birthday money amount", async function () {
-      expect(await birthdayContract.getGiftAmount()).to.equal(mockGiftAmount);
+
+    it("it should set fields ", async function () {
+      let birhdate = new BN(getDate(1));
+
+      //when
+      this.birthday = await Birthday.new(name, birhdate, participationAmount, { from: owner });
+
+      //then
+      expect(await this.birthday.owner()).to.equal(owner);
+      expect(await this.birthday.getName()).to.equal(name);
+      expect(await this.birthday.getParticipationAmount()).to.be.bignumber.equal(participationAmount);
+      expect(await this.birthday.getBirthdayDate()).to.be.bignumber.equal(birhdate);
+
     });
 
-    it("Should default return 0 in getContractBalance", async function () {
-      mockDefaultContractBalance = ethers.utils.parseEther("0");
-      expect(await birthdayContract.getContractBalance()).to.equal(
-        mockDefaultContractBalance
-      );
-    });
-
-    it("Should default return empty list in getParticipantList", async function () {
-      expect(await birthdayContract.getParticipantList()).to.length(0);
-    });
-
-    // it("Should close the contract with set flag", async function () {
-    //   await birthdayContract.setContractFlag();
-    //   const result = await birthdayContract.getBirthdayChildName();
-    //   console.log("result : ", result);
-    //   // await expectRevert(result.reason, "Contract is not active");
-    // });
-
-    // it("Should deposit gift money to contract", async function () {
-    //   const mockAddress = addr1;
-    //   const mockAmount = mockGiftAmount;
-
-    //   const receipt = await birthdayContract.giftMoneyDeposit({
-    //     from: mockAddress,
-    //     value: mockAmount,
-    //   });
-
-    //   expectEvent(receipt, "GiftMoneyDeposit", {
-    //     who: mockAddress,
-    //     amount: mockAmount,
-    //   });
-    // });
-
-    it("should activate or deactivate contract by owner", async function () {
-      const deactivateResult = await birthdayContract.setContractFlag({
-        from: owner,
-      });
-
-      expect(deactivateResult).to.equal(false);
-
-      const activateResult = await birthdayContract.setContractFlag({
-        from: owner,
-      });
-
-      expect(activateResult).to.equal(true);
-    });
-
-    it("should not activate or deactivate contract by user if it is not owner of contract", async function () {
-      const result = await birthdayContract.setContractFlag({ from: addr1 });
-
-      await expectRevert(result, "Ownable: caller is not the owner");
-    });
-
-    // it("should finish contract by owner", async function () {
-    //   const result = await birthdayContract.finishContract({ from: addr1 });
-
-    //   expect(result).to.equal("contract is finished");
-    // });
   });
+
+  describe("Participation", function () {
+
+    beforeEach(async function () {
+      let birhdate = new BN(getDate(1));
+      this.birthday = await Birthday.new(name, birhdate, participationAmount, { from: owner });
+    });
+
+
+    it("it should emit UserParticipated event ", async function () {
+      //when
+      const receipt = await this.birthday.participateBirthday({ from: addr1, value: participationAmount });
+
+      //then
+      expectEvent(receipt, 'UserParticipated', { user: addr1, participationAmount: participationAmount });
+    });
+
+    it("it should revert as Invalid participationAmount ", async function () {
+      //when
+      const result = this.birthday.participateBirthday({ from: addr1, value: new BN(10) });
+
+      //then
+      await expectRevert(result, 'Insufficient participation amount');
+    });
+
+    it("it should revert as You have already been participated ", async function () {
+      await this.birthday.participateBirthday({ from: addr1, value: participationAmount });
+
+      //when
+      const result = this.birthday.participateBirthday({ from: addr1, value: participationAmount });
+
+      //then
+      await expectRevert(result, 'You have already been participated');
+    });
+
+  });
+
+
+  function getDate(day) {
+    const date = new Date();
+    date.setDate(date.getDate() + day);
+    return date.getTime();
+  }
 });
