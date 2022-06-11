@@ -3,7 +3,6 @@ const { ethers } = require("hardhat");
 const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const Birthday = artifacts.require("BirthdayMoneyCollector");
 
-
 contract('BirthdayMoneyCollector', function ([owner, addr1, addr2, addr3]) {
 
   const name = 'fatih';
@@ -65,6 +64,14 @@ contract('BirthdayMoneyCollector', function ([owner, addr1, addr2, addr3]) {
 
       //then
       await expectRevert(result, 'You have already been participated');
+    });
+
+    it("it should increase contract balance ", async function () {
+      await this.birthday.participateBirthday({ from: addr1, value: participationAmount });
+      await this.birthday.participateBirthday({ from: addr2, value: participationAmount });
+
+      //then
+      expect(await this.birthday.getContractBalance()).to.be.bignumber.equal(participationAmount.add(participationAmount));
     });
 
   });
