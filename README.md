@@ -12,10 +12,22 @@ npm install
 
 In the project directory, you can run:
 
-### `npx hardhat compile`
+### `yarn compile`
 
 Compiling the contracts
 
-### `npx hardhat test`
+### `yarn test`
 
 Launches the test runner
+
+### `yarn deploy:local`
+
+Start to deployment locally
+
+### `yarn deploy:goerli`
+
+Start to deployment in goerli network
+
+## Get test Ether
+
+You have to visit https://goerli-faucet.pk910.de/ to get test ether in your metamask wallet
