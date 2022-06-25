@@ -6,31 +6,39 @@ import "hardhat/console.sol";
 
 contract BirthdayMoneyCollector is Ownable {
     string _name;
+    string _image;
     uint256 _birthdayDate;
 
     bool _isActive;
 
     uint256 _participationAmount;
+    uint256 _targetGiftAmount;
     address[] _participantList;
     mapping(address => uint256) _participants;
 
     constructor(
         string memory name,
+        string memory image,
         uint256 birthdayDate,
-        uint256 participationAmout
+        uint256 participationAmout,
+        uint256 targetGiftAmount
     ) {
         require(birthdayDate > block.timestamp, "The birthdayDate is invalid");
 
         _name = name;
+        _image = image;
         _birthdayDate = birthdayDate;
         _participationAmount = participationAmout;
+        _targetGiftAmount = targetGiftAmount;
         _isActive = true;
 
         emit BirthdayMoneyCollectorCreated(
             owner(),
             _name,
+            _image,
             _birthdayDate,
-            _participationAmount
+            _participationAmount,
+            _targetGiftAmount
         );
     }
 
@@ -44,12 +52,8 @@ contract BirthdayMoneyCollector is Ownable {
         return _isActive;
     }
 
-    function getName() public view returns (string memory) {
-        return _name;
-    }
-
-    function getParticipationAmount() public view returns (uint256) {
-        return _participationAmount;
+    function getBirthdayData() public view returns (string memory, string memory, uint256, uint256, uint256, uint256, address[] memory ) {
+        return (_name, _image, _birthdayDate, _participationAmount, _targetGiftAmount, address(this).balance, _participantList );
     }
 
     function getContractBalance() public view returns (uint256) {
@@ -58,10 +62,6 @@ contract BirthdayMoneyCollector is Ownable {
 
     function getParticipantList() public view returns (address[] memory) {
         return _participantList;
-    }
-
-    function getBirthdayDate() public view returns (uint256) {
-        return _birthdayDate;
     }
 
     function participateBirthday() public payable isContractActive {
@@ -99,8 +99,10 @@ contract BirthdayMoneyCollector is Ownable {
     event BirthdayMoneyCollectorCreated(
         address owner,
         string name,
+        string image,
         uint256 birthdayDate,
-        uint256 participationAmount
+        uint256 participationAmount,
+        uint256 targetContractBalance
     );
     event UserParticipated(address user, uint256 participationAmount);
     event CollectedBirthdayMoneyTransfered(
