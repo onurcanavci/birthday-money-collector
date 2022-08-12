@@ -1,0 +1,33 @@
+.main-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: "Roboto";
+  height: 100vh;
+  background-image: url("./assets/birthday-baloon.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+.inner-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 50px;
+  margin: 30px;
+  background-color: #110e0e;
+  border-radius: 15px;
+}
+
+.heading-text {
+  color: #e5771b;
+  font-size: 32px;
+  text-align: center;
+}
+
+.text {
+  color: white;
+  font-size: 20px;
+  text-align: center;
+}
