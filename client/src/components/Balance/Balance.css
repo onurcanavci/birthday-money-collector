@@ -1,0 +1,45 @@
+.money-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.money-container .data {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+}
+
+.money-container .item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.money-container .text {
+  font-size: 16px;
+}
+
+.balance-name {
+  color: #585076;
+  font-size: 18px;
+  align-self: center;
+}
+
+.amount {
+  color: #c4c4c4;
+  font-size: 28px;
+}
+
+.circular-progress-bar-container {
+  display: flex;
+  flex-direction: row;
+  width: 40%;
+  justify-content: center;
+  align-items: center;
+}

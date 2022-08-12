@@ -1,0 +1,54 @@
+.contractOwner-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  margin-top: 10px;
+  padding: 5px;
+}
+
+.contractOwner-input {
+  background-color: white;
+  border-width: 1px;
+  border-radius: 5px;
+  color: #e5771b;
+  font-size: 20px;
+  padding: 5px;
+  width: 70%;
+}
+
+.contractOwner-button {
+  background-color: #e5771b;
+  border-width: 1px;
+  border-radius: 5px;
+  color: white;
+  font-size: 20px;
+  padding: 5px;
+  width: 25%;
+  display: inline-block;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.24),
+    0 17px 50px 0 rgba(0, 0, 0, 0.19);
+}
+
+.contractOwner-button:hover {
+  background-color: black;
+  color: #e5771b;
+  border: 2px solid white;
+}
+
+.contractOwner-button:active {
+  box-shadow: 0 5px #666;
+  transform: translateY(2px);
+}
+
+.contractOwner-button:disabled,
+.contractOwner-button[disabled] {
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
+  box-shadow: 0 0px;
+  transform: translateY(0px);
+  cursor: default;
+}

@@ -1,0 +1,42 @@
+.button-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.deposit-button {
+  background-color: white;
+  border: 2px solid #e5771b;
+  border-width: 1px;
+  border-radius: 5px;
+  color: #e5771b;
+  font-size: 20px;
+  padding: 5px;
+  width: 100%;
+  display: inline-block;
+
+  transition-duration: 0.4s;
+  cursor: pointer;
+}
+
+.deposit-button:hover {
+  background-color: black;
+  color: #e5771b;
+  border: 2px solid white;
+}
+
+.deposit-button:active {
+  box-shadow: 0 5px #666;
+  transform: translateY(2px);
+}
+
+.deposit-button:disabled,
+.deposit-button[disabled] {
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
+  box-shadow: 0 0px;
+  transform: translateY(0px);
+  cursor: default;
+}
