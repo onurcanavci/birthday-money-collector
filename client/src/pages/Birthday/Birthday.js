@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
-import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
-import { ethers } from "ethers";
 import toast, { Toaster } from "react-hot-toast";
 import { useParams } from "react-router-dom";
+import { parseEther } from "ethers/lib/utils";
+import { ethers } from "ethers";
+import { Button, CircularProgress } from "@mui/material";
 
 import Heading from "../../components/Heading";
 import Balance from "../../components/Balance";
-import DepositButton from "../../components/DepositButton";
-import MetaMaskButton from "../../components/MetamaskButton/MetamaskButton";
 import ContractOwnerButton from "../../components/ContractOwnerButton";
 import Timer from "../../components/Timer";
 import { customContract, signedContract } from "../../contract/contractUtils";
-
 import { useCountdown } from "../../hooks/useCountDown";
+
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 
 function Birthday() {
   const params = useParams();
@@ -99,8 +99,7 @@ function Birthday() {
   const sendGift = async () => {
     setDepositLoading(true);
     const options = {
-      // value: ethers.utils.parseEther("0.1").toString(),
-      value: 7500000,
+      value: parseEther(birthdayData.participationAmount),
       gasLimit: 7500000,
     };
 
@@ -147,7 +146,8 @@ function Birthday() {
           }
           setCloseContractLoading(false);
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log("err: ", e);
           toast.error("Transaction failed!");
           setCloseContractLoading(false);
         });
@@ -206,18 +206,33 @@ function Birthday() {
           numberOfParticipant={birthdayData.participantList.length}
           targetGiftAmount={birthdayData.targetGiftAmount}
         />
-        <DepositButton
+        <Button
+          fullWidth
+          className='Button'
+          variant='contained'
           onClick={sendGift}
+          sx={{ marginBottom: "8px" }}
           disabled={
-            depositButtonDisabled || days + hours + minutes + seconds <= 0
+            depositButtonDisabled ||
+            days + hours + minutes + seconds <= 0 ||
+            depositLoading
           }
-          isLoading={depositLoading}
-        />
-        <MetaMaskButton
+        >
+          {depositLoading ? <CircularProgress /> : `Send Money`}
+        </Button>
+
+        <Button
+          fullWidth
+          className='Button'
+          variant='contained'
           onClick={connectMetamask}
-          address={walletAddress}
           disabled={walletAddress}
-        />
+          sx={{ marginBottom: "8px" }}
+        >
+          {walletAddress
+            ? `Connected with ${walletAddress}`
+            : `Connect to MetaMask!`}
+        </Button>
         <Timer birthdate={birthdayData.birthdayDate} />
         {contractOwner && (
           <ContractOwnerButton
