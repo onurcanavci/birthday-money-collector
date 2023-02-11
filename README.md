@@ -31,3 +31,12 @@ Start to deployment in goerli network
 ## Get test Ether
 
 You have to visit https://goerli-faucet.pk910.de/ to get test ether in your metamask wallet
+
+#### TODO
+- [ ] Create a factory contract to generate new birthday contracts.
+- [ ] Support stablecoins (such as USDT and USDC)
+- [ ] Support multiple networks(such as Avalanche and Solana) 
+- [ ] Release on website with documentation. 
+- [ ] [Support wallet connect](https://walletconnect.com/)
+----
+
